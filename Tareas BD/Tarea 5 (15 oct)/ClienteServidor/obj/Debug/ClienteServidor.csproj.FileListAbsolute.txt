@@ -1,0 +1,15 @@
+C:\BD\Programas\ClienteServidor\bin\Debug\ClienteServidor.exe.config
+C:\BD\Programas\ClienteServidor\bin\Debug\ClienteServidor.exe
+C:\BD\Programas\ClienteServidor\bin\Debug\ClienteServidor.pdb
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.csprojResolveAssemblyReference.cache
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.FrmMenú.resources
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.Properties.Resources.resources
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.csproj.GenerateResource.Cache
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.exe
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.pdb
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.TablasCons.FrmAlumnos.resources
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.TablasCons.FrmConsulta.resources
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.Procesos.FrmSubProgsAlm.resources
+C:\BD\Programas\ClienteServidor\obj\Debug\ClienteServidor.Procesos.FrmGestorBD.resources
+C:\BD\Programas\ClienteServidor\bin\Debug\GestorBD.dll
+C:\BD\Programas\ClienteServidor\bin\Debug\GestorBD.pdb

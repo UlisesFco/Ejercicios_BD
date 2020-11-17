@@ -1,0 +1,102 @@
+--1.Consulta: para cada ciudad, listar las instituciones,
+--y sus campus, que se localizan en la misma. 
+Select u.nombre as NomUni ,ca.nombre as NomCam from  TP4_Campus ca, TP4_Universidad u
+where  ca.ciudad='Monterrey'
+and u.idUni=ca.iduni;
+
+--b. Consulta: obtener el nombre de las instituciones, sin importar el campus,
+--donde se imparten las carreras de Ing. en Computación, Ing. en Telemática y 
+--Lic. en Matemáticas (o sea, todas ellas). 
+Select u.nombre from TP4_Universidad u, TP4_Imparte i, TP4_Carrera cr
+where u.idUni=i.idUni and i.idCarrera=cr.idCarrera and 
+(cr.nombre ='Matematicas' or cr.nombre ='Ing en Computación' or 
+cr.nombre = 'Ing en Telemática');
+
+--C. Consulta: escribir los campus, y su institución, que tienen más de dos 
+--servicios adicionales en el mismo sitio del campus. 
+--Nota: No existe ninguna institución con dos servicios, pero sí con una
+Select  ca.nombre, u.nombre from TP4_Universidad u, TP4_campus ca, TP4_ofrece o
+where u.idUni=ca.idUni and o.idCampus=cA.idCampus and o.enCampus='Si' 
+having count(o.idCampus)>=2
+group by ca.nombre, u.nombre;
+
+--d. Consulta: mostrar el nombre de las instituciones que ofrezcan todas las 
+--carreras registradas en la base de datos, sin importar en que campus 
+--se impartan.
+Select u.nombre from TP4_Universidad u, TP4_Imparte i, TP4_Carrera ca
+Where u.idUni=i.idUni and i.idCarrera=ca.idCarrera and
+        ca.nombre = all (Select c.nombre from TP4_carrera c)
+        
+--Define una función que reciba como entrada el nombre de una institución y el 
+--de uno de sus campus y entregue como salida la cantidad de servicios 
+--adicionales que éste ofrece. 
+create or replace function TP4_CantServ( nomInst char, 
+nomCamp char) 
+return integer is 
+cant integer;
+begin
+    select count(o.idServicios) into cant 
+    from TP4_Universidad u, TP4_Campus ca, TP4_Ofrece o 
+    where u.idUni=ca.idUni and ca.idCampus=o.idCampus and
+    u.nombre=nomInst and ca.nombre=nomCamp 
+    group by o.idServicios;
+    return cant;
+end;
+
+--Prueba
+declare NombreI varchar(50); NombreC varchar(30);
+begin
+  NombreC:='Rio Hondo';
+  NombreI:='Instituto Tecnológico Autonomo De México';
+  dbms_output.put('Cantidad de servicios de ' || NombreI || ' en el campus ' ||
+  NombreC || ':');
+  dbms_output.put_line(TP4_CantServ(NombreI, NombreC));
+end;
+
+--Define un procedimiento que reciba como entrada el nombre de una institución,
+--el de dos de sus campus y un grado de estudios (default: doctor), y entregue 
+--como salida el nombre del campus que tiene más profesores con ese grado o 
+--la cadena ‘igual’, si es que están empatados
+Create or replace procedure TP4_GradEsc(nomInst char, nomc1 char, nomc2 
+varchar, gradEst char,   nomCm out char)is
+cantc1 integer; cantc2 integer;
+begin
+    select count(d.idCampus) into cantc1 from TP4_Profesor p, TP4_Departamento d, 
+    TP4_Campus ca, TP4_Universidad u 
+    where u.idUni=ca.idUni and u.Nombre=nomInst and ca.idCampus=d.idCampus
+    and d.idDep=p.idDep and ca.Nombre=nomc1 and p.Escolaridad=gradEst
+    group by d.idCampus;
+    
+    select count(d.idCampus) into cantc2 from TP4_Profesor p, TP4_Departamento d, 
+    TP4_Campus ca, TP4_Universidad u 
+    where u.idUni=ca.idUni and u.Nombre=nomInst and ca.idCampus=d.idCampus
+    and d.idDep=p.idDep and ca.Nombre=nomc2 and p.Escolaridad=gradEst
+    group by d.idCampus;
+    
+    if cantc2<cantc1 then
+        nomCm:=nomc2;
+    else if cantc2>cantc1 then
+        nomCm:=nomc1;
+        else
+        nomCm:='igual';
+        end if;
+    end if;
+end;
+
+--Prueba
+declare
+  nom1 varchar(30); nom2 varchar(30); result varchar(30); nomInst varchar(50);
+  esc varchar(30);
+begin
+  nom1:='Rio Hondo';  nom2:= 'Santa Teresa'; 
+  nomInst:='Instituto Tecnológico Autonomo De México';
+  esc:='LC';
+  TP4_GradEsc(nomInst,nom1, nom2,esc, result);
+    if result = 'igual' then
+	dbms_output.put_line(nom1||' y '||nom2||' tienen los mismos profesores con 
+    escolaridad : '|| esc||'.');
+    else
+	dbms_output.put_line('Entre '||nom1||' y '||nom2||', tiene más profesores con
+    escolaridad '||esc|| ': '||result);
+    end if;
+end;

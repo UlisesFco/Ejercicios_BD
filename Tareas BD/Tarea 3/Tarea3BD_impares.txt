@@ -1,0 +1,86 @@
+-- Ejercicios impares de la tarea 3 de Bases de datos
+-- Ricardo Carro 152809
+-- Ulises Alejandre 15...
+--a)
+create or replace function cantEgresados (area char) return integer is
+cant integer;
+
+begin
+select count(distinct idA) into cant
+from Carrera c, Estudió e
+where e.idCar = c.idCar and area = c.Área;
+return cant;
+end;
+ 
+--Prueba
+begin
+ dbms_output.put('Cantidad de egresados de esta área ');
+ dbms_output.put_line(cantEgresados('Administrativa'));
+end;
+
+--c)
+create or replace 
+procedure agregaOrganizacion(nomOrg char, nomCon char, monto number) is
+idc number; ido number; 
+begin
+ select idOrg into ido
+ from Organización
+ where NomOrg = nomOrg;
+ 
+ select idCon into idc
+ from Concurso
+ where NomCon = nomCon;
+ 
+ insert into Organizó values (ido, idc, monto);
+
+end;
+
+--prueba
+declare 
+NomOrg varchar(30); NomCon varchar(30); Monto integer;
+begin
+NomOrg:= 'ITAM';
+NomCon:= 'BANAMEX 18';
+Monto:= 1234;
+agregaOrganizacion(NomOrg,NomCon,Monto);
+end;
+
+--e)
+create or replace trigger ActClaveTesis
+after update on Tesis 
+for each row
+begin
+update Ganó g set g.idT =: new.idT
+ where g.idT =: old.idT;
+ dbms_output.put_line('se ha cambiado la clave de la tesis en Ganó');   
+
+update Estudió e set e.idT =: new.idT
+ where e.idT =: old.idT;
+ dbms_output.put_line('se ha cambiado la clave de la tesis en Estudió');  
+
+end;
+
+--g)
+
+create or replace trigger muestraDattosOrg
+after insert on Organizó
+when 
+begin
+
+
+end;
+
+--g)
+ create or replace trigger insertaOrg
+ after insert on Organización
+ declare cursor cursor1 is
+  (select o.NomOrg, sum(monto) as suma from Organizó org, Organización o
+   where o.idorg = org.idOrg
+   group by o.NomOrg);
+   begin
+	open cursor1;
+	for var in cursor1 loop
+	dbms_output.put_line(var.NomOrg || ' ' || var.suma);
+	end loop;
+	close cursor1;
+	end;

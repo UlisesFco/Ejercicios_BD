@@ -1,0 +1,76 @@
+Tarea 2 BD
+Ulises Alejandre
+Ricardo Carro
+
+--a)
+select noma, nomcar, nomorg, nomt
+from autor au, estudió e, carrera ca, organización o, tesis t
+where au.ida=e.ida and e.idcar=ca.idcar 
+  and e.idorg=o.idorg and t.idt=e.idt and o.tipo='esc'
+order by noma;
+
+--c)
+select nomorg, nomcar
+from organización o, imparte i, carrera c
+where o.idorg=i.idorg and i.idcar=c.idcar 
+  and c.área not in 'Ingeniería';
+
+--e)
+select distinct nomorg
+from organización org, organizó o, concurso c
+where org.idorg=o.idorg and o.idcon=c.idcon
+  and nomorg in (select distinct nomorg 
+    from organización org, organizó o, concurso c 
+    where org.idorg=o.idorg and o.idcon=c.idcon
+      and nomcon like 'AMIME%')
+  and nomorg in (select distinct nomorg 
+    from organización org, organizó o, concurso c 
+    where org.idorg=o.idorg and o.idcon=c.idcon
+      and nomcon like 'IMEF%');
+
+--g)
+select distinct nomorg
+from organización org, organizó o, ganó g
+where org.idorg=o.idorg and o.idcon=g.idcon
+  and org.tipo='esc'
+  and g.idt not in (select g.idt 
+    from ganó g, tesis t 
+    where t.idt=g.idt and g.lugar=1);
+
+--i) 
+select distinct nomcon
+from concurso c, organizó o, organización org
+where (nomcon in(select distinct nomcon 
+  from concurso c, organizó o, organización org
+  where nomorg='BANAMEX' or nomorg='BANXICO'
+    and c.idcon=o.idcon and o.idorg=org.idorg)
+  or nomcon  in (select distinct nomcon
+  from concurso c, ganó g, Tesis t, estudió e, carrera car
+  where área = 'Sociales' and car.idcar=e.idcar and e.idt=g.idt
+    and g.idcon=c.idcon))
+  and c.idcon=o.idcon and org.idorg=o.idorg;
+
+--k)
+select nomorg, nomcar, count(e.ida) "cantidad de egresados"
+from carrera c, estudió e, autor a, organización o
+where c.idcar=e.idcar and a.ida=e.ida and o.idorg=e.idorg
+group by nomorg, nomcar
+order by nomorg;
+
+--m)
+select nomorg, count(*) "Número de concursos"
+from organización org, organizó o, concurso c
+where tipo ='emp' and o.idorg=org.idorg and c.idcon=o.idcon
+and extract(year from fechafin) > extract(year from sysdate)-1
+group by nomorg;
+
+--o)
+select nomorg, count(e.idorg)
+	from organización org, estudió e
+	where org.tipo ='esc' and org.idorg=e.idorg 
+	group by nomorg
+	having count(e.idorg) >= all
+		(select count(e.idorg)
+		from organización org, estudió e
+  	where org.tipo ='esc' and org.idorg=e.idorg 
+    group by nomorg);

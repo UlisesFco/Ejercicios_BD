@@ -1,0 +1,149 @@
+//Web
+
+
+//Gestor se usa igual que en la formas
+
+//Ir a otra página
+				//carpeta\archivo.aspx
+Server.Transfer("Tarea6/Menu.aspx");
+
+//Usar Session["Nombre"] para guardar varibles recurrentes
+Session["gestorBD"] = gestorBD;
+//Se recuperan llamando a Session y casteando al tipo de dato
+gestorBD = (GestorBD.GestorBD)Session["gestorBD"];
+
+//Para no hacer todo siempre -> va en el page Load
+//Ejemplo con access -> igual a win forms
+if (!IsPostBack)
+        {
+            cadSql = "SELECT Editorial.NomEd FROM Editorial";
+            gestorBD = new GestorBD.GestorBD("Microsoft.ACE.OLEDB.12.0", "Admin", "",
+                    "C:/BD/2oParcial/BD2oPedLibros.accdb");
+            gestorBD.consBD(cadSql, dsEdits, "Edits");
+
+            //Cargar ddl
+            com.cargaDDL(ddlEdits,dsEdits,"Edits","NomEd");
+            Session["gestorBD"] = gestorBD;
+        }
+
+//Habilitar y visibilidad de componentes DDL
+        ddlFolios.Enabled = true;
+        ddlFolios.Visible = true;
+
+//Llenar tabla simple
+        //Primera forma: haciendo nueva consulta
+gestorBD.consBD(cadSql,dsPedidos,"info");
+
+DataRow fila = dsPedidos.Tables["info"].Rows[0];
+
+//Segunda alternativa: usando la información que ya está en el DataSet (más eficiente,
+//pero puede tener datos desactualizados).
+//filas = (DataRow[])DsPedidos.Tables["Pedidos"].Select("FolioP=" + DdlPedidos.Text);
+//fila = filas[0];
+
+tblPedido.Rows[1].Cells[0].Text = folio;// dsPedidos.Tables["info"].Rows[0]["IdPed"].ToString();
+tblPedido.Rows[1].Cells[1].Text = fila["FechaPed"].ToString();
+tblPedido.Rows[1].Cells[2].Text = fila["MontoTotal"].ToString();
+tblPedido.Rows[1].Cells[3].Text = fila["CantEjems"].ToString();
+tblPedido.Rows[1].Cells[4].Text = fila["RfcDis"].ToString();
+
+ //Llenar datagrid
+gestorBD.consBD(cadSql,dsPagos,"pagos");
+
+gvPagos.DataSource = dsPagos.Tables["pagos"];
+gvPagos.DataBind();
+
+
+//Ejemplo de ejecución de un procedimiento almacenado (en Oracle).
+  //Procedimiento cantPedidosArt:
+  // recibe como parámetro de entrada el nombre de un artículo y regresa como 
+  // parámetro de salida la cantidad de pedidos en los que aparece.
+  protected void BtnEjecutaProc_Click(object sender, EventArgs e) {
+    String nomArt;
+    int cant;
+
+    //1- Abrir la conexión a la BD.
+    cnOracle = GestorBD.conex;
+    cnOracle.Open();
+    procAlm = new OleDbCommand();
+    procAlm.Connection = cnOracle;
+    
+    //2- Especificar el llamado al procedimiento  (en general: al subprograma).
+    procAlm.CommandText = "cantPedidosArt";
+    procAlm.CommandType = CommandType.StoredProcedure;
+
+    //3- Especificar los parámetros:
+    //a) primero todos los de entrada:
+    nomArt = "Portafolios";
+    par = new OleDbParameter("nom", nomArt);
+    procAlm.Parameters.Add(par);
+
+    //b) luego todos los de salida (uno en este caso):
+    par = new OleDbParameter("cant", OleDbType.Integer,
+      4, ParameterDirection.Output, false, 4, 0, "NomArt", DataRowVersion.Current, 0);
+    procAlm.Parameters.Add(par);
+
+    //4- Ejecutar el procedimiento (en general: el subprograma).
+    try {
+      procAlm.ExecuteNonQuery();
+
+      //5- Recuperar el (los) valor(es) regresado(s) por medio del (de los)
+      //   parámetro(s) de salida.
+      cant = Convert.ToInt16(procAlm.Parameters["cant"].Value);
+      Label1.Text= "Cantidad de pedidos: " + cant;
+    }
+    catch (OleDbException err) {
+      Label1.Text = err.Message;
+    }
+
+    //6- Cerrar la conexión a la BD.
+    cnOracle.Close();
+  }
+
+
+  //Ejemplo de ejecución de una función almacenada (en Oracle).
+  //Función cantArtsPedido:
+  // recibe como parámetro de entrada el folio de un pedido,
+  // y regresa la cantidad de artículos pedidos.
+  protected void BtnEjecutaFunc_Click(object sender, EventArgs e) {
+    int folioPed, cantArts;
+
+    //1- Abrir la conexión a la BD.
+    cnOracle = GestorBD.conex;
+    cnOracle.Open();
+    procAlm = new OleDbCommand();
+    procAlm.Connection = cnOracle;
+
+    //2- Especificar el llamado a la función.
+    procAlm.CommandText = "cantArtsPedido";
+    procAlm.CommandType = CommandType.StoredProcedure;
+
+    //3- Especificar los parámetros:
+    // a) Nota: primero hay que definir el tipo de valor que regresará la función.
+    par = new OleDbParameter("RETURN_VALUE", OleDbType.Integer,
+      4, ParameterDirection.ReturnValue, false, 4, 0, "cantArts", DataRowVersion.Current, 0);
+    procAlm.Parameters.Add(par);
+
+    // b) luego hay que definir los parámetros de entrada (uno en este caso).
+    folioPed = 10;
+    par = new OleDbParameter("folio", folioPed);
+    procAlm.Parameters.Add(par);
+
+    //4- Ejecutar el procedimiento (en general: el subprograma).
+    try {
+      procAlm.ExecuteNonQuery();
+
+      //5- Recuperar el valor regresado por la función.
+      cantArts = Convert.ToInt16(procAlm.Parameters["RETURN_VALUE"].Value);
+      Label1.Text = "Cantidad de artículos: " + cantArts;
+    }
+    catch (OleDbException err) {
+      Label1.Text = err.Message;
+    }
+
+    //6- Cerrar la conexión a la BD.
+    cnOracle.Close();
+  }
+
+
+

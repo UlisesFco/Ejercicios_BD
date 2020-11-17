@@ -1,0 +1,63 @@
+--b
+select  NomT, FechIni, NomCon
+from Tesis t, Ganó g, Concurso c
+order by NomCon DESC, NomT
+Where t.idT=g.idT and g.idCon=c.idCon
+and extract(year from fechaIni)=extract(year from sysdate)-1
+
+--d
+Select NomCar, NomOrg 
+from Carrera c,Imparte i, Organización o
+Where c.idCar=i.idCar and i.idOrg=o.idOrg
+
+
+--f
+Select nomT 
+From Tesis t, Ganó g, Concurso c
+Where t.idT=g.idT and g.Idcon= c.idCon 
+and idT in
+	(Select idT from Ganó g, Concurso c
+	Where g.idT=c.idT and c.nomCon like "BANAMEX%" )
+and idT in
+	(Select idT from Ganó g, Concurso c
+	Where g.idT=c.idT and
+	c.nomCon like "Anime%")
+
+--h
+Select nomA from Autor a, Estudió e 
+Where a.idA=e.idA and idA in 
+	(select idA from Estudió e, Carrera c 
+	where e.idCar=c.idCar and area like "Administrativas")
+or idA in
+	(Select idA from Estudió e, Ganó g, Concurso c
+	Where e.idT=g.idT and g.idCon=c.idCon and
+	extract(year from fechaIni)=extract(year from sysdate)-1)
+
+
+
+--j
+Select nomOrg from Organización o, Estudió e 
+Where o.idOrg=e.idOrg and idT in
+	(Select idT from Tesis t, Ganó g 
+	where count(*) >=2 and t.idT=g.idT)
+--l
+Select nomT, nomA from Autor a, Estudió e, Tesis t
+Where a.idA=e.idA and e.idT=t.idT and 
+idT in	(Select idT from Tesis t, Ganó g, Concurso c 
+	where count(*) <2 and t.idT=g.idT and c.idCon=g.idCon and
+	extract(year from fechaIni)=extract(year from sysdate)-1)
+
+--n
+Select NomCar From Carrera c, Estudió e 	
+Where e.idCar=c.idCar and count(idCar)>= all
+	(Select count(idA) from Estudió e,  Ganó g, Concurso c 
+	Where e.idT=g.idT and g.idCon=c.idCon group by idA)
+group by idCar
+
+--p
+Select NomOrg from Organización or
+Where count(IdOrg) >=
+	(Select count(IdOrg) from Organizó o 
+	Group by(IdOrg))
+group by NomOrg
+	

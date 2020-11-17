@@ -1,0 +1,108 @@
+--Ejemplos consultas MDX
+--1)
+with
+member Measures.[Total Sales Amount] as
+Measures.[Sales Amount] +
+Measures.[Sales Amount - Reseller Sales]
+select
+Measures.[Total Sales Amount] on columns
+from [Clientes-Productos]
+
+--2)
+with
+member Measures.[Special Discount] as
+Measures.[Discount Amount] * 1.5
+select
+Measures.[Special Discount] on columns,
+non empty Product.[Product Line].members on rows
+from [Clientes-Productos]
+ 
+-------------------------------
+--TP5.2
+-----------------------------
+-- a) Muestra las ventas (monto y unidades) de los años
+-- antepasado y pasado de la provincia de Alberta, Canada.
+select
+{ Measures.[Sales Amount],
+Measures.[Order Quantity] } on columns,
+{ [Order Date].[2001], [Order Date].[2004] } on rows
+from [Clientes-Productos]
+where Customer.Canada.Alberta
+
+-- b). Muestra los montos de las ventas de cada modelo de
+-- los productos.
+select
+Measures.[Sales Amount] on columns,
+non empty Product.[Model Name].members on rows
+from [Clientes-Productos]
+
+-- c)
+select
+   Product.[Product Line].Members on columns,
+   Customer.[Country- Region].Members on rows
+from [Clientes-Productos]
+where Measures.[Total Product Cost]
+
+--d)
+select
+Measures.[Sales Amount] on columns,
+{Customer.[Lancaster],Customer.[Saint-Denis]} on rows
+from [Clientes-Productos]
+where Product.[Paseo: 1000, azul, 46]
+
+-- e
+select [Sales Amount - Reseller Sales] on columns,
+	non empty descendants(Sales,1) on rows --Descendants(Elem,nivel) ->cuantos niveles bajar
+	--non empty descendants([Dept-Title], 2) on rows
+	--non empty sales.children on rows
+from [Clientes-Productos]
+
+--f
+select
+[Order Quantity] on columns,
+non empty filter([Product Line].members,[Order Quantity]>350) on rows
+from [Clientes-Productos]
+where Customer.London
+
+-- g
+
+select [Sales Amount] on columns,
+	non empty filter((Customer.City.members, [Product Line].members), 
+	[Sales Amount]>80000) on rows
+from [Clientes-Productos]
+where [order Date].[2016].[2]
+
+-- Variante de g: todas las dimensiones empleadas en una tupla.
+select [Sales Amount] on columns,
+	non empty filter((Customer.City.members, [Product Line].members,
+	[order Date].[2016].[2]), [Sales Amount]>80000) on rows
+from [Clientes-Productos]
+
+-- h
+select non empty (Customer.[Country-Region].members,
+Product.[Product Line].members) on 0,
+[Order Date].[2018] on 1
+from [Clientes-Productos]
+where Measures.[Sales Amount]
+
+-- i
+select non empty (Customer.[Country-Region].members,
+Product.[Product Line].members) on 0,
+  	{[Order Date].[2017], [Order Date].[2018]} on 1
+from [Clientes-Productos]
+where Measures.[Sales Amount]
+
+-- j
+select non empty (Customer.[Country-Region].members,
+	Product.[Product Line].members, 
+	{[Order Date].[2017],[Order Date].[2018]}) on 0,
+	{[Sales Amount],[Order Quantity]} on 1
+from [Clientes-Productos]
+
+-- k
+select non empty (Customer.[Country- Region].members,
+Product.[Product Line].members) on 0,
+  	non empty Product.[Model name].members on 1
+from [Clientes-Productos]
+where [Sales Amount]
+

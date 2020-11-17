@@ -1,0 +1,64 @@
+--Tarea 7 BD -> Consultas Cubo
+
+--a)
+select 
+{Measures.[Store Sales], Measures.[Unit Sales]} on columns,
+Region.[Sales Country].Mexico on rows
+from [Food Mart]
+where [Product Category].Fruit
+
+--b)
+select { Measures.[Store Sales]} on columns,
+non empty [Customer].City.members on rows
+from [Food Mart]
+
+--c)
+select 
+Region.[Sales Country].members on columns,
+Product.[Depts-Products].members on rows
+from [Food Mart]
+where Measures.[Store Cost]
+
+--d)
+select Measures.[Store Sales] on columns,
+{(city.Orizaba), (city.Merida)} on rows
+from [Food Mart]
+where [Product].[Beer and Wine]
+
+--e)
+select 
+[Store Cost] on columns,
+non empty descendants(JerProds.[Food].[Bread],1) on rows
+from [Food Mart]
+where JerCust.[USA]
+
+--f)
+select Measures.[Store Sales] on columns,
+filter(Product.[Product Category].members, [Store Sales]>400) on rows
+from [Food Mart]
+where City.Guadalajara
+
+--g)
+select 
+[Unit Sales] on columns,
+filter(JerCust.[Sales Country].[Sales Region].[Sales City],[Unit Sales]>300) on rows
+from [Food Mart]
+where Product.[Product Subcategory].Bagels
+
+--h)
+select non empty ([Store].[Sales Country].members, [Customer].[City].members, Store.[Sales District].members ) on columns,
+non empty {[Store Sales]} on rows
+from [Food Mart]
+
+--i)
+select 
+[Unit Sales] on columns,
+(Product.[Product Department].children,Customer.[Sales Region].children,[Product Subcategory].children) on rows
+from [Food Mart]
+where [Time By Day].Q3
+
+
+--j)
+select  ([Store].[Sales Region].members, [Product].[Product Category].members) on columns,
+{[Time by day].[Quarter].[Q1],[Time by day].[Quarter].[Q2]} on rows
+from [Food Mart]

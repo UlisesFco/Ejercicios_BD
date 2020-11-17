@@ -1,0 +1,13 @@
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\bin\Debug\TP5_Tarea_LuisAlexis.exe.config
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\bin\Debug\TP5_Tarea_LuisAlexis.exe
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\bin\Debug\TP5_Tarea_LuisAlexis.pdb
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\bin\Debug\GestorBD.dll
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\bin\Debug\GestorBD.pdb
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\obj\Debug\TP5_Tarea_LuisAlexis.csprojResolveAssemblyReference.cache
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\obj\Debug\TP5_Tarea_LuisAlexis.Principal.resources
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\obj\Debug\TP5_Tarea_LuisAlexis.Procesos.frmNuevaIns.resources
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\obj\Debug\TP5_Tarea_LuisAlexis.Procesos.frmVerCarr.resources
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\obj\Debug\TP5_Tarea_LuisAlexis.Properties.Resources.resources
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\obj\Debug\TP5_Tarea_LuisAlexis.csproj.GenerateResource.Cache
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\obj\Debug\TP5_Tarea_LuisAlexis.exe
+C:\BD\TP5_Tarea_LuisAlexis\TP5_Tarea_LuisAlexis\obj\Debug\TP5_Tarea_LuisAlexis.pdb

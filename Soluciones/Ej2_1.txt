@@ -1,0 +1,100 @@
+-- Ej. 2.1
+
+-- 2)
+-- Versión estándar.
+select NomProf, categoría
+from prof
+where idprof not in
+	(select idprof
+	from grupo)
+
+-- Con minus (de Oracle)
+select nomprof,categoría
+from prof
+  minus
+select nomprof, categoría
+from prof p, grupo g
+where p.idprof=g.idprof
+
+-- 3)
+select nomal, count(*) "Cant. de cursos"
+from alum a, inscrito i
+where a.cu=i.cu
+group by nomal
+having count(*) >= 2
+order by 1
+
+-- 4)
+select nommat, avg(cast(calif as real)) "Promedio"
+from mater m, historial h
+where calif>=6 and extract(year from fecha)=extract(year from sysdate)-1 and m.clavem=h.clavem
+group by nommat
+
+-- 5)
+select nommat, count(distinct calif) "Cant. de califs. distintas"
+from mater m, historial h
+where m.clavem=h.clavem
+group by nommat
+having count(distinct calif)>2
+
+-- 8)
+select carr, nommat, count(*) "Cant. de alumnos"
+from historial h, alum a, mater m
+where fecha between '2017-08-01' and '2018-06-06'
+  and a.cu=h.cu and h.clavem=m.clavem
+group by carr, nommat
+
+-- 9)
+select nommat, nomal
+from alum a, inscrito i, grupo g, mater m
+where a.cu=i.cu and i.claveg=g.claveg and g.clavem=m.clavem
+  and nommat in
+  (select nommat
+  from inscrito i, grupo g, mater m
+  where i.claveg=g.claveg and g.clavem=m.clavem
+  group by nommat
+  having count(*)<=3)
+order by nommat
+
+
+
+-- 12)
+select nomal, prom
+from alum
+where prom>all
+	(select avg(prom)
+	from alum)
+
+-- 13)
+select nommal, nommat
+from alum a, inscrito i, grupo g, mater m
+where a.cu=i.cu and i.claveg=g.claveg and g.clavem=m.clavem
+  and a.cu in
+	(select cu
+	from inscrito
+	group by cu
+	having count(*) >= all
+		(select count(*)
+		from inscrito
+		group by cu))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

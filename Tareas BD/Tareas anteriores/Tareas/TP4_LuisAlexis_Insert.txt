@@ -1,0 +1,60 @@
+insert into TP4_Universidad values(1,'Instituto Tecnológico Autonomo De México','ITAM');
+insert into TP4_Universidad values(2,'Universidad Anahuac','UA');
+insert into TP4_Universidad values(3,'Universidad Autonoma de México','UNAM');
+insert into TP4_Universidad values(4,'Universidad Iberoamericano','UI');
+insert into TP4_Universidad values(5,'Tecnológico de Monterrey','ITESM');
+
+
+insert into TP4_Universidad values(1,'Instituto Tecnológico Autonomo De México','ITAM');
+insert into TP4_Universidad values(2,'Universidad Anahuac','UA');
+insert into TP4_Universidad values(3,'Universidad Autonoma de México','UNAM');
+insert into TP4_Universidad values(4,'Universidad Iberoamericano','UI');
+insert into TP4_Universidad values(5,'Tecnológico de Monterrey','ITESM');
+
+
+insert into TP4_Carrera values(1,'Matematicas','Mat');
+insert into TP4_Carrera values(2,'Ing en Computación','Ing');
+insert into TP4_Carrera values(3,'Contabilidad','Adm');
+insert into TP4_Carrera values(4,'Economía','Egn');
+insert into TP4_Carrera values(5,'Ing en Mecatronica','Ing');
+
+insert into TP4_Campus values (1,'Santa Teresa','Camino de Sta. Teresa 930','55 5628 4000','Ciudad de México','Ciudad de México',1,100);
+insert into TP4_Campus values (2,'Ciudad Universitaria','Av Universidad 3000','55 5622 1332','Ciudad de México','Ciudad de México',3,500);
+insert into TP4_Campus values (3,'Rio Hondo','Río Hondo 1, Altavista, 01080','55 5628 4000','Ciudad de México','Ciudad de México',1,60);
+insert into TP4_Campus values (4,'Monterrey',' Av. Eugenio Garza Sada 2501','81 8358 2000','Monterrey','Nuevo León',5,120);
+insert into TP4_Campus values (5,'Acatlán','San Juan Totoltepe s/n 53150','55 5623 1715','Estado de México','Acatlán',3,80);
+insert into TP4_Campus values (6,'Santa Fe','Av de los Poetas 100, Santa Fe','55 9177 8000','Ciudad de México','Ciudad de México',5,60);
+
+insert into TP4_Servicios values (1,'Cafetería');
+insert into TP4_Servicios values (2,'Gimnasio');
+insert into TP4_Servicios values (3,'Biblioteca');
+insert into TP4_Servicios values (4,'Danza Irlandesa');
+insert into TP4_Servicios values (5,'Centro de Cómputo');
+
+insert into TP4_Imparte values(1,5,3,8,400);
+insert into TP4_Imparte values(1,1,3,9,300);
+insert into TP4_Imparte values(3,4,5,9,280);
+insert into TP4_Imparte values(3,1,2,8,250);
+insert into TP4_Imparte values(5,4,4,10,300);
+
+insert into TP4_Departamento values (1,'Economía',1);
+insert into TP4_Departamento values (2,'Matemáticas',3);
+insert into TP4_Departamento values (3,'Sistemas Digitales',3);
+insert into TP4_Departamento values (4,'Computación',3);
+insert into TP4_Departamento values (5,'Administración',2);
+insert into TP4_Departamento values (6,'Administración',1);
+
+insert into TP4_Profesor values(1,'Claudia',2,'DR');
+insert into TP4_Profesor values(2,'Felipe',4,'DR');
+insert into TP4_Profesor values(3,'Vladimir',2,'MI');
+insert into TP4_Profesor values(4,'Rafael',3,'LC');
+insert into TP4_Profesor values(5,'José',5,'LC');
+insert into TP4_Profesor values(6,'Juan',6,'LC');
+insert into TP4_Profesor values(7,'Jael',6,'LC');
+
+insert into TP4_Ofrece values(1,2,'Si','Si');
+insert into TP4_Ofrece values(1,1,'No','Si');
+insert into TP4_Ofrece values(2,2,'No','No');
+insert into TP4_Ofrece values(3,3,'Si','No');
+insert into TP4_Ofrece values(4,5,'No','No');
+

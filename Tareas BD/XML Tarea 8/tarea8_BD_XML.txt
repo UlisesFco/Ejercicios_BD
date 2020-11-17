@@ -1,0 +1,122 @@
+--Tarea 8
+--Ulises Alejandre
+--Ricardo Carro
+===============================================================
+			XPath
+===============================================================
+
+--a)
+select Doc.query('//employee/address[contains(.,"Miami")]/../fname')
+from Company;
+
+--b)
+select Doc.query('companyDB//locations[location>="P" and location<="T"]/../dname') 
+from Company;
+
+--c)
+select Doc.query('//department[dname<"S"]/employees')
+from Company;
+
+--d)
+select Doc.query('companyDB//department[@dno!=6]/projectsControlled[@pnos]') 
+from Company;
+
+--e)
+select Doc.query('//employee[projects/worksOn/@hours>40]/fname')
+from Company;
+
+--f)
+select Doc.query('companyDB//project[count(workers/worker)>3]/pname') 
+from Company;
+
+--g)
+select Doc.query('//employee[sum(projects/worksOn/@hours)>40]/fname')
+from Company;
+
+--h)
+select Doc.query('companyDB//employee//dependent[relationship="Son" or relationship="Daughter"]/dependentName')
+from Company;
+
+--i)
+select Doc.query('//employee[projects/worksOn/@pno>=61 and fname>="L"]/fname')
+from Company;
+
+--j)
+select Doc.query('companyDB//employee[dependents and @worksFor=7 ]/.[@manages]')
+from Company;
+
+===============================================================
+			XQuery
+===============================================================
+--a)
+select Doc.query
+('for $x in //department, $y in //department/locations/location
+where contains($y,"an")
+return <resul> {$x/@dno,$x/dname, $y} </resul>')
+from Company;
+
+--b)
+select Doc.query
+('for $x in //employee
+where $x/projects/worksOn/@pno>10 and $x/projects/worksOn/@pno<20
+return <resul> {$x/fname} </resul>')
+from Company;
+
+--c)
+select Doc.query
+('for $x in //employee
+where $x/lname >= "U" and $x/salary >50000 
+order by $x/salary descending
+return <resul> {concat($x/fname, " ", $x/minit ,". ",$x/lname) cast as xs:string?} </resul>')
+from Company;
+
+--d)
+select Doc.query
+('for $x in //employee
+where $x/salary<50000
+return <resul> {$x//dependentName, $x//dependent/relationship} </resul>')
+from Company;
+
+--e)
+select Doc.query
+('for $x in //project
+where count($x/workers/worker) > 3
+return <resul> {$x/pname  cast as xs:string?, $x/plocation  cast as xs:string?, sum($x/workers/worker)  cast as xs:string?} </resul>')
+from Company;
+
+--f)
+select Doc.query
+('for $x in //employee
+where $x/projects/worksOn/@pno>10 and $x/projects/worksOn/@pno<20
+return <resul> {$x/fname} </resul>')
+from Company;
+
+--g)
+select Doc.query
+('for $x in //project, $y in //department
+let $z := $x/workers/worker
+where $x//@controllingDepartment = $y/@dno
+return <resul> {$x/pname cast as xs:string?, $y/dname cast as xs:string?, sum($z) cast as xs:string?}</resul>')
+from Company;
+
+--h)
+select Doc.query
+('for $x in //employee, $y in //department
+where $x/@worksFor = $y/@dno and count($x/@manages)>0
+return <resul> {$x/fname} {$y/dname} </resul>')
+from Company;
+
+--i)
+select Doc.query
+('for $x in //employee, $y in //employee
+where  $x/@ssn = $y/@supervisor
+order by $x/lname, $y/lname
+return <resul> {concat($x/fname, " ",$x/lname, " supervises ", $y/fname," ", $y/lname) }</resul>')
+from Company;
+
+--j)
+select Doc.query
+('for $x in //project, $y in //employee
+where $x/@controllingDepartment=5 and $x//workers/worker/@essn=$y/@ssn
+return <resul> {$x/pname} {$y/fname}  </resul>')
+from Company;

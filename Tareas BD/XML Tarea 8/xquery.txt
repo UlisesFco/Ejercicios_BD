@@ -1,0 +1,127 @@
+--TP6
+--==================================================== 
+--		2 - XQuery
+--====================================================
+--a. Escribir el nombre (completo) de los empleados en orden ascendente por apellido.
+select Doc.query
+('for $x in //employee
+order by $x/lname
+return <resul> {concat($x/fname," ", $x/minit,". ", $x/lname)} </resul>')
+from Company;
+
+--b. Escribir el nombre (completo) de los empleados para los cuales su nombre inicia con “J”.
+select Doc.query
+('for $x in //employee
+where substring($x/fname,1,1) = "J"
+return <resul> {concat($x/fname," ", $x/minit,". ", $x/lname)} </resul>')
+from Company;
+
+--c. Obtener el nombre de los proyectos que tienen trabajadores que le dedican un máximo de 5
+--horas al proyecto.
+select Doc.query
+('for $x in //project
+where $x//worker <= 5
+return <resul> {$x/pname} </resul>')
+from Company;
+
+--d.Escribir el nombre de los departamentos que inicien con una letra a partir de ‘L’.
+select Doc.query
+('for $x in //department
+where substring($x/dname,1,1) >= "L"
+return <resul> {$x/dname} </resul>')
+from Company;
+
+--e. Mostrar el nombre de los proyectos que inician con la palabra "Product" y que tienen más de
+--dos trabajadores.
+select Doc.query
+('for $x in //project
+where contains($x/pname,"Product ") and count($x//worker)>2
+return <resul> {$x/pname} </resul>')
+from Company;
+
+--f. Listar el nombre de los proyectos controlados por un departamento con clave mínima de 6.
+select Doc.query
+('for $x in //project
+where $x[@controllingDepartment>=6]
+return <resul> {$x/pname} </resul>')
+from Company;
+
+--g. Igual al anterior, mostrando también la cantidad de empleados que tienen dichos
+--proyectos.
+select Doc.query
+('for $x in //project
+where $x/@controllingDepartment >= 6
+return <resul> {$x/pname cast as xs:string?, count($x//worker) cast as xs:string?} </resul>')
+from Company;
+
+--h. Escribir el nombre de los departamentos (usando For).
+select Doc.query
+('for $x in //department
+return <resul> {$x//dname} </resul>')
+from Company;
+
+--i. Escribir el nombre de los departamentos (usando Let).
+select Doc.query
+('let $x := //department
+return <resul> {$x//dname} </resul>')
+from Company;
+
+--j. Obtener el nombre y los datos del manager de cada departamento.
+select Doc.query
+('for $x in //department
+let $y := $x/dname, $z := $x/manager
+return <resul> {$y, $z} </resul>')
+from Company;
+
+--k. Listar el promedio del salario que ganan los empleados.
+-- k
+select Doc.query		--Incorrecto.
+('for $x in //employee
+return <resul> {avg($x//salary)} </resul>')
+from Company;
+
+select Doc.query		--Correcto.
+('let $x := //employee
+return <resul> {avg($x//salary)} </resul>')
+from Company;
+
+--l. Mostrar el valor máximo de horas dedicadas a cada proyecto.
+select Doc.query
+('for $x in //project
+let $y:= $x/pname, $z:= max($x//worker)
+return <resul> {$y cast as xs:string?,$z cast as xs:string?} </resul>')
+from Company;
+
+--m. Listar el nombre de los proyectos y el nombre de los empleados que trabajan en ellos, ordenando
+alfabéticamente en ambos casos.
+select Doc.query
+('for $p in //project, $e in //employee
+where $p//@essn=$e/@ssn
+order by $p/pname, $e/fname
+return <resul> {$p/pname, $e/fname} </resul>')
+from Company;
+
+--n. Listar el nombre completo de los empleados y el nombre del departamento al que están
+--adscritos, ordenando alfabéticamente por apellido del empleado.
+select Doc.query
+('for $d in //department, $e in //employee
+where $d//@dno=$e/@worksFor
+order by $d/dname, $e/lname ascending
+return <resul> { concat($e/fname, " " ,$e/lname, ": ") cast as xs:string?,$d/dname cast as xs:string?} </resul>')
+from Company;
+
+-- o
+select Doc.query
+('for $x in //employee
+where $x/@worksFor=6 and contains(concat($x/fname,$x/minit,$x/lname),"i")
+return <resul> {$x/fname, $x/lname} </resul>')
+from Company;
+
+-- p
+select Doc.query
+('for $x in //department
+let $y := count($x//location) 
+where $y>2
+return <resul> {concat($x/dname, ", cant. ubicaciones: ",
+   $y cast as xs:string?)}</resul>')
+from Company;

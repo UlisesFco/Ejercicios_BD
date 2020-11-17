@@ -1,0 +1,350 @@
+﻿--Tarea 3
+--Luís Delfín, Alexis Calvillo
+set serveroutput on
+--a  Elabora una función que reciba el nombre de un área (Ingeniería, Sociales o
+--Administrativas) y entregue la cantidad de egresados de la misma que han 
+--participado en los concursos.
+create or replace function cantEgre (area char)
+return integer is
+     cuantos integer;
+begin 
+    Select count(idA) into cuantos 
+    from Carrera c, estudió e
+    where c.idcar=e.idcar and área = area;
+    return cuantos;
+end;
+--Prueba
+declare ar varchar(20);
+begin
+    ar:='Ingeniería';
+    dbms_output.put('Cantidad de egresados de' || ar || ' : ');
+    dbms_output.put_line(cantEgre(ar));
+end;
+
+--b. Elabora un procedimiento que entregue dos parámetros de salida, el primero con 
+--el nombre del área que más egresados tiene y el segundo con el de la que menos tiene 
+--(si en algún caso hay empate, regresa el área alfabéticamente menor). Utiliza la 
+--función anterior. No emplees cursores. 
+
+create or replace procedure egresadosMaxMin(nomMax out char, nomMin out char) is
+        cantAdmin int; cantSociales int; cantIng int; maxi int; mini int;
+begin
+        cantAdmin:=cantEgre('Administrativas');
+        cantSociales:=cantEgre('Sociales');
+        cantIng:=cantEgre('Ingeniería');
+        nomMax:= 'Administrativas';
+        maxi:= cantAdmin;
+        nomMin:= 'Administrativas';
+        mini:= cantAdmin;
+        if maxi<cantIng then
+                nomMax:= 'Ingenieria';
+                maxi:=cantIng;
+        end if;
+        if maxi<cantSociales then
+                nomMax:= 'Sociales';
+                maxi:=cantSociales;
+        end if;
+        if mini>cantIng then
+                nomMin:= 'Ingenieria';
+                mini:=cantIng;
+        end if;
+        if mini>cantSociales then
+                nomMin:= 'Sociales';
+                mini:=cantSociales;
+        end if;
+        dbms_output.put_line('Mas egresados:'|| nomMax || 'Menos egresados:' || nomMin );
+end;
+
+--prueba 
+declare 
+nomMax varchar(30); nomMin varChar(30);
+begin
+egresadosMaxMin(nomMax, nomMin);
+end;
+
+
+
+--c. Elabora un procedimiento que reciba como entrada el nombre de una 
+--organización, el nombre de un concurso y un monto, y agregue la tupla 
+--correspondiente en la tabla Organizó 
+create or replace procedure insertaPNoNc(nomOrga char, nomConc char, monto real) 
+is idconc int; idorga int;
+begin
+    --Obtiene la clave del concurso
+    select idcon into idconc 
+    from concurso c 
+    where c.nomcon=nomConc;
+    --Obtiene la clave de la organización
+    select idorg into idorga
+    from organización o
+    where o.nomOrg=nomOrga;
+    --Inserta valores
+    insert into organizó o
+    values (idorga, idconc, monto);
+end;
+
+
+--Prueba
+declare 
+    nomorgi varchar(30); nomconci varchar(30); montot real;
+    begin
+        nomorgi:='ITAM';
+        nomconci:='ANIEI 16';
+        insertapnonc(nomorgi,nomconci,123123);
+end;
+
+--d.Elabora una función que reciba dos valores enteros de entrada, 
+--representando años en que se han efectuado concursos. La función 
+--deberá entregar como resultado una cadena ‘Sí’, en caso de que 
+--todas las empresas que participaron en la organización de los 
+--concursos del año dado en el primer parámetro, hayan participado 
+--también en la organización de los concursos celebrados en el año 
+--dado en el segundo; en caso contrario, la función debe regresar la 
+--cadena ‘No’. Utiliza cursores para que esta función sea más eficiente.
+-- Este problema es de inclusión de conjuntos. 
+ 
+create or replace function participo(a1 int, a2 int) return varchar is
+chain varchar(30);
+ban int;
+
+begin
+        declare cursor data1 is
+                select distinct org.IdOrg
+                from Organización org, Organizó o, Concurso c
+                where org.IdOrg = o.IdOrg and o.IdCon = c.IdCon
+                and extract(year from FechaIni) = a1
+                order by IdOrg asc;
+
+
+        cursor data2 is
+                select distinct org.IdOrg
+                from Organización org, Organizó o, Concurso c
+                where org.IdOrg = o.IdOrg and o.IdCon = c.IdCon
+                and extract(year from FechaIni) = a2
+                order by IdOrg asc;
+
+        a int;
+        b int;
+
+        begin
+                open data1;
+                open data2;
+                fetch data1 into a;
+                fetch data2 into b;
+                ban := 0;
+
+                loop
+                exit when ban = -1 or data1%notfound or data2%notfound;
+                if b > a then
+                     ban := -1;
+                end if;
+                if a = b then
+                    fetch data1 into a;
+                    fetch data2 into b;
+                end if;
+                if a > b then
+                    fetch data2 into b;
+               end if;
+               if  data1%notfound then
+                    ban := 1;
+                 end if;
+            end loop;
+                close data1;
+                close data2;
+                if ban = 1 then
+                    chain := 'SI';
+                else
+                    chain :='NO';
+                end if;
+                return chain;
+    end;
+end;
+
+--Prueba
+Declare
+a1 int;a2 int;
+begin
+a1:= 2016;
+a2:= 2017;
+dbms_output.put('¿Todas las organizaciones que participaron en:' ||a1|| ', también participaron en: ' ||a2|| '? ' );
+dbms_output.put_line(participo(a1,a2));
+end;
+
+
+--e. Elabora un trigger que actualice todas las tablas que sean necesarias cuando 
+--se cambie la clave de una tesis.
+create or replace trigger claveT
+after update on tesis
+for each row 
+begin
+    update Ganó g set g.idT=:new.idT
+    where g.idt=:old.idT;
+    update estudió e set e.idT=:new.idT
+    where e.idT=:old.idT;
+end;
+
+--Prueba
+
+Update tesis t set t.idt=31416
+where t.idt=213;
+
+
+
+--f. Elabora un trigger que actualice todas las tablas que sean
+--necesarias cuando se cambie la clave de una organización. En 
+--este caso tendrás que definir otros triggers de actualización 
+--sobre las tablas de Escuela e Imparte para poder hacer todas 
+--las actualizaciones que se requieran. 
+
+
+--Trigger principal
+create or replace 
+trigger CambiaOrg
+before update on Organización
+for each row
+begin
+        
+        update Escuela e set e.idorg= :new.idorg
+        where e.idorg= :old.idorg; 
+        
+        dbms_output.put_line('También se cambió en escuela');
+        
+        update organizó o set o.idorg=:new.idorg
+        where o.idorg=:old.idorg;
+        
+        dbms_output.put_line('También se cambió en Organizó');
+        update empresa o set o.idorg=:new.idorg
+        where o.idorg=:old.idorg;
+        dbms_output.put_line('También se cambió en empresa');
+End;
+--Trigger para escuela
+create or replace trigger chidorgesc
+before update on escuela 
+for each row
+begin
+      update imparte e set e.idorg= :new.idorg
+      where e.idorg= :old.idorg;  
+      dbms_output.put_line('También se cambió en imparte');
+end;
+--Trigger para imparte
+create or replace trigger chidorgimp
+before update on imparte
+for each row
+begin
+      update estudió e set e.idorg= :new.idorg
+      where e.idorg= :old.idorg;  
+      dbms_output.put_line('También se cambió en estudió');
+end;
+
+--Prueba
+update organización o set idorg=1234 where idorg=150
+
+
+
+
+
+--g. Elabora un trigger sobre la tabla Organizó de tal manera que cuando se 
+--inserte una tupla, se muestren en pantalla el nombre de las organizaciones y la
+--suma total que cada una ha aportado para la organización de los concursos 
+--registrados. Requerirás de un cursor para poder hacer el desplegado.
+
+--Cursor, despliega el nombre de las organizaciones y la suma total que cada 
+--una ha aportado
+create or replace trigger montosOrg 
+  after insert on organizó
+ declare cursor datosOrg is
+        select nomOrg, sum(monto) 
+        from Organización og, organizó o
+        where o.idorg=og.idorg 
+        group by nomOrg;
+        nombreO varchar(25); sumaM float;
+        begin
+        open datosOrg;
+        loop    
+            fetch datosOrg into nombreO, sumaM;
+            exit when datosOrg%notfound;
+            dbms_output.put_line('La organización: '
+            || nombreo
+            || ', ha aportado: '
+            || sumam);
+        end loop;
+        close datosOrg;
+end montosOrg;
+
+--Prueba 
+Insert into organizó values(154,102,12345)
+
+
+--h. Elabora un procedimiento que tome como parámetros el nombre de dos alumnos,
+--que use cursores y que regrese en un parámetro de salida:  − 0: si no llevan 
+--exactamente las mismas materias − 1: si sí, y − 2: si ambos no llevan materia
+--alguna.  Usa la función creada en el inciso a para contar la cantidad de 
+--materias que lleva un alumno. También requerirás usar dos cursores. 
+create or replace procedure mismMat(alum1 char, alum2 char, res out int)
+is cursor data1 is 
+  select distinct m.claveM from mater m, grupo g, inscrito i, alum a
+  where m.clavem=g.clavem and g.claveg=i.claveg 
+  and  i.cu=a.cu and a.nomal=alum1
+  order by m.claveM asc;
+  cursor data2 is 
+  select distinct m.claveM from mater m, grupo g, inscrito i, alum a
+  where m.clavem=g.clavem and g.claveg=i.claveg 
+  and  i.cu=a.cu and a.nomal=alum2
+  order by m.claveM asc;
+  cantmat1 int; cantmat2 int;
+  c1 int; c2 int; ban int;
+begin
+  cantmat1:=cuantmat(alum1);
+  cantmat2:=cuantmat(alum2);
+  if cantmat1=cantmat2 and cantmat1 != 0 then
+  --Llevan la misma cantidad, es factible revisar si son exactamente las mismas
+   open data2;
+   open data1;
+                fetch data1 into c1;
+                fetch data2 into c2;
+                ban := 0;
+
+                loop
+                exit when ban = -1 or data1%notfound or data2%notfound;
+                if c1 > c2 or c1<c2 then
+                     ban := -1;
+                end if;
+                if c1 = c2 then
+                    fetch data1 into c1;
+                    fetch data2 into c2;
+                end if;
+                if c1 < c2 then
+                    ban:=-1;
+               end if;
+               if  data1%notfound then
+                    ban := 1;
+                 end if;
+            end loop;
+                close data1;
+                close data2;
+                if ban = 1 then
+                    res:=0;
+                else
+                    res:=1;
+                end if;
+  else if cantmat1=0 then
+  --No llevan ninguna materia
+        res:=2;
+        else
+  --No llevan la misma cantidad de materias, por lo tanto no llevan las mismas 
+  --materias exactamente.
+        res:=1;
+        end if;
+  
+  end if;
+end;
+--Prueba
+Declare
+a1 varchar(30);a2 varchar(30); res int;
+begin
+a1:= 'Rebeca';
+a2:= 'Gabriel';
+dbms_output.put('El alumno' ||a1|| ', tiene las mismas materias de: ' ||a2|| '? ' );
+mismmat(a1,a2,res);
+dbms_output.put_line(res);
+end;

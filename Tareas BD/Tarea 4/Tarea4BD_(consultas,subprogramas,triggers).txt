@@ -1,0 +1,95 @@
+-- Tarea 4 Bases de datos
+--Ricardo Carro
+--Ulises Alejandre
+
+
+--a)
+select distinct numarts, I4.nomins 
+from Autor_T4 A4, Institucion_T4 I4
+where A4.idOrg = I4.idOrg;
+
+--b)
+select distinct nomIns, pais
+from organizacion_t4 o, institucion_t4 i, congreso_t4 c, presentado_t4 p, articulo_t4 art, 
+  financiamiento_t4 f, recibe_t4 r, autor_t4 a
+where o.idorg = i.idorg and a.idorg=i.idorg and f.idorg = o.idorg and a.idaut = art.idaut
+  and art.idart = p.idart and p.idcon = c.idcon;
+
+
+--c)
+select A4.nomAut,  count(Prest4.idArt) "Cantidad de articulos en mas congresos"
+from Autor_T4 A4, Articulo_T4 Art4, Presentado_T4 Prest4, Congreso_T4 Con4
+where A4.idAut = Art4.idAut and Art4.idArt = Prest4.idArt and Prest4.idCon = Con4.idCon;
+group by nomAut
+having count (Prest4.idArt) >= (select idArt count(*) from Presentado_T4 P4, Congreso_T4 C4 where C4.idCon = P4.idCon);  
+
+--d)
+select nomEmp, sum(aportacion) "suma aportacion", count(*) "Congresos participados" 
+from empresa_t4 e, organiza_t4 o, congreso_t4 c
+where e.idorg = o.idorg and c.idcon = o.idcon
+group by nomEmp
+having count(*) >2;
+
+--e)
+create or replace function CantCongresos(nombre char) return integer is
+ cantCongresos integer;
+ begin
+ select count(*) into cantCongresos
+ from Organizacion_T4 OT4, Organiza_T4 O4, Congreso_T4 ConT4
+ where OT4.idOrg = O4.idOrg and O4.idCon = ConT4.idCon; 
+ return cantCongresos;
+ end;
+
+
+--f)
+create or replace 
+procedure patrocinaMasCongresos(emp1 char, emp2 char,res out char) is
+cant1 int; cant2 int;
+begin
+  create or replace 
+procedure patrocinaMasCongresos(emp1 char, emp2 char,res out varchar) is
+cant1 int; cant2 int;
+begin
+  select count(*)  into cant1
+  from empresa_t4 e, organiza_t4 o,organizacion_t4 org, congreso_t4 c 
+  where e.idorg=o.idorg and c.idcon=o.idcon and org.idorg=e.idorg and nomEmp=emp1;
+  
+  select count(*) into cant2
+  from empresa_t4 e, organiza_t4 o, organizacion_t4 org, congreso_t4 c 
+  where e.idorg=o.idorg and c.idcon=o.idcon and e.idorg=org.idorg and nomEmp=emp2;
+  dbms_output.put_line('cant1 '||cant1);
+  dbms_output.put_line('cant2 '||cant2);
+  if cant1 is null then 
+    cant1:= 0;
+  else 
+    if cant2 is null then
+    cant2:=0;
+    end if;
+  end if;
+  
+  if cant1=cant2 then
+    res:='igual';
+  else 
+    if cant1>cant2 then
+      res:= emp1;
+    else
+      res:= emp2;
+    end if;
+  end if;
+      
+ dbms_output.put_line('El que tiene más materias fue: ' || res);
+end;
+
+--g)
+create or replace trigger actNumArt
+after insert on Presentado_T4 
+for each row
+begin
+
+ update Autor_T4 A4 set A4.numArts = :old.NumArts + 1
+  where A4.idAut = Articulo_T4.idAut and Articulo_T4.idArt= : new.idArt
+ dbms_output.put_line('Se realizó la actualización en numero de articulos de forma exitosa');
+
+ 
+end;
+

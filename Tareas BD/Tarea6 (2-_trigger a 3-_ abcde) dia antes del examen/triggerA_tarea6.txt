@@ -1,0 +1,16 @@
+create or replace trigger actReabast
+before update on PCArtículos
+for each row
+declare nuevoFolio number; cantPedida number; monto number; fechaAct date;
+begin
+if :old.cantMín>:old.cantAct then
+  select max(folioR) into nuevoFolio from PCReabast;
+  nuevoFolio:=nuevoFolio + 1;
+  cantPedida:= :old.cantPedir;
+  monto := (:old.cantPedir*:old.precio)*0.7;
+  fechaAct:= sysdate;
+  
+  insert into PCReabast values (nuevoFolio,cantPedida,monto,fechaAct,null,:old.idArt);
+end if;
+
+end;

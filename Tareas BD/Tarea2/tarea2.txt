@@ -1,0 +1,164 @@
+--Tarea 2 BD
+--Ulises Alejandre
+--Ricardo Carro
+
+--a)
+select noma, nomcar, nomorg, nomt
+from autor au, estudió e, carrera ca, organización o, tesis t
+where au.ida=e.ida and e.idcar=ca.idcar 
+  and e.idorg=o.idorg and t.idt=e.idt and o.tipo='esc'
+order by noma;
+
+--b)
+select NomCon, FechaFin, NomOrg, monto
+from Concurso c, organizó o, organización org
+where c.idCon = o.idCon and o.idOrg = org.idOrg
+order by FechaFin ASC
+
+--c)
+select nomorg, nomcar
+from organización o, imparte i, carrera c
+where o.idorg=i.idorg and i.idcar=c.idcar 
+  and c.área not in 'Ingeniería';
+
+--d)
+select  distinct(NomA), NomCar
+from Autor a, Estudió e, Carrera c, Tesis T, Ganó g
+where a.idA = e.idA and e.idCar = c.idCar and c.Área = 'Ingeniería' and 
+e.idT = g.idT and g.Lugar = 1
+order by NomCar DESC
+
+--e)
+select distinct nomorg
+from organización org, organizó o, concurso c
+where org.idorg=o.idorg and o.idcon=c.idcon
+  and nomorg in (select distinct nomorg 
+    from organización org, organizó o, concurso c 
+    where org.idorg=o.idorg and o.idcon=c.idcon
+      and nomcon like 'AMIME%')
+  and nomorg in (select distinct nomorg 
+    from organización org, organizó o, concurso c 
+    where org.idorg=o.idorg and o.idcon=c.idcon
+      and nomcon like 'IMEF%');
+
+-- f)
+select t.idT, NomT, NomCon
+from Tesis t, Ganó g, Concurso c
+where t.idT = g.idT and g.idCon = c.idCon
+and NomCon like 'ANIEI%'
+and t.idT in 
+(select t.idT from Tesis t, Ganó g, Concurso c 
+where t.idT = g.idT and g.idCon = c.idCon
+and NomCon like 'AMIME%')
+and g.idCon in
+(select g.idCon from Ganó g, Concurso c
+where g.idCon = c.idCon);
+
+--g)
+select distinct nomorg
+from organización org, organizó o, ganó g
+where org.idorg=o.idorg and o.idcon=g.idcon
+  and org.tipo='esc'
+  and g.idt not in (select g.idt 
+    from ganó g, tesis t 
+    where t.idt=g.idt and g.lugar=1);
+
+--h)
+select Nomorg, NomCon
+from Organización org, Organizó o, Concurso c
+where Tipo = 'emp' and c.idCon = o.idCon and o.idOrg not in
+(select idOrg 
+from Concurso c, Organizó o
+where (extract(year from FechaIni) = extract(year from sysdate)-1) and 
+c.idCon = o.idCon)
+and org.idOrg not in
+(select idOrg 
+from Concurso c, Organizó o
+where (extract(year from FechaIni) = extract(year from sysdate)-2) and 
+c.idCon = o.idCon)
+
+--i) 
+select distinct nomcon
+from concurso c, organizó o, organización org
+where (nomcon in(select distinct nomcon 
+  from concurso c, organizó o, organización org
+  where nomorg='BANAMEX' or nomorg='BANXICO'
+    and c.idcon=o.idcon and o.idorg=org.idorg)
+  or nomcon  in (select distinct nomcon
+  from concurso c, ganó g, Tesis t, estudió e, carrera car
+  where área = 'Sociales' and car.idcar=e.idcar and e.idt=g.idt
+    and g.idcon=c.idcon))
+  and c.idcon=o.idcon and org.idorg=o.idorg;
+
+--j)
+select NomCon,FechaIni
+from Concurso con
+where extract(year from FechaIni) = extract(year from sysdate) or NomCon in
+(select NomCon
+from Concurso con, Ganó g, Estudió e, Organización org
+where con.idcon =g.idcon and g.idt=e.idt and e.idorg=org.idorg and NomOrg ='ITAM');
+
+--k)
+select nomorg, nomcar, count(e.ida) "cantidad de egresados"
+from carrera c, estudió e, autor a, organización o
+where c.idcar=e.idcar and a.ida=e.ida and o.idorg=e.idorg
+group by nomorg, nomcar
+order by nomorg;
+
+--l)
+select NomCar, NomA, NomT
+from Tesis t, Estudió e, Autor a, Carrera c
+where t.idt=e.idt and e.ida = a.ida and e.idcar = c.idcar and Nomt in
+(select NomT
+from Tesis t, Estudió e, Autor a
+where t.idt= e.idt and e.ida=a.ida
+group by Nomt
+having count(*)>=2
+intersect
+select NomT
+from Tesis t, Ganó g, Concurso con
+where t.idt=g.idt and g.idcon=con.idcon
+group by nomt
+having count(*)>=2);
+
+--m)
+select nomorg, count(*) "Número de concursos"
+from organización org, organizó o, concurso c
+where tipo ='emp' and o.idorg=org.idorg and c.idcon=o.idcon
+and extract(year from fechafin) > extract(year from sysdate)-1
+group by nomorg;
+
+--n)
+select NomOrg
+from Organización org, Imparte i, Carrera c
+where  org.idorg=i.idorg and i.idcar=c.idcar and org.tipo = 'esc'
+having count(*) <= all -- esto es para el maximo de materias
+(select count(*)
+from Organización org, Imparte i, Carrera c
+where org.idorg=i.idorg and i.idcar=c.idcar)
+and count(*) >= all --esto es para el minimo de materias
+(select count(*)
+from Organización org, Imparte i, Carrera c
+where org.idorg=i.idorg and i.idcar=c.idcar)
+group by NomOrg ;
+
+--o)
+select nomorg, count(e.idorg)
+	from organización org, estudió e
+	where org.tipo ='esc' and org.idorg=e.idorg 
+	group by nomorg
+	having count(e.idorg) >= all
+		(select count(e.idorg)
+		from organización org, estudió e
+  	where org.tipo ='esc' and org.idorg=e.idorg 
+    group by nomorg);
+
+--p) 
+select NomOrg
+from Organización org, Organizó o, Concurso con
+where org.idOrg=o.idOrg and o.idCon=con.idCon 
+having count(*) >= all
+(select count(*)
+from Concurso)
+group by NomOrg
+

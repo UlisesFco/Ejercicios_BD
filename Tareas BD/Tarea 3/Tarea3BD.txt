@@ -1,0 +1,223 @@
+-- Ejercicios impares de la tarea 3 de Bases de datos
+-- Ricardo Carro 152809
+-- Ulises Alejandre 159235
+--a)
+create or replace function cantEgresados (area char) return integer is
+cant integer;
+
+begin
+select count(distinct idA) into cant
+from Carrera c, Estudió e
+where e.idCar = c.idCar and area = c.Área;
+return cant;
+end;
+ 
+--Prueba
+begin
+ dbms_output.put('Cantidad de egresados de esta área ');
+ dbms_output.put_line(cantEgresados('Administrativa'));
+end;
+
+--b)
+create or replace
+procedure MaxMinEgresados(minAr out char, maxAr out char) is
+  ing number; soc number; adm number;
+begin
+    ing:= cantEgresados('Ingeniería');
+    soc:= cantEgresados('Sociales');
+    adm:= cantEgresados('Administrativas');
+    
+    if (ing>=soc) then
+      if(ing > adm) then
+        maxAr:='Ingeniería';
+      end if;
+      if(adm=ing) then
+        maxAr:='Administrativas';
+      end if;
+    else
+        if (adm > soc) then
+          minAr:='Sociales';
+        else
+          minAr:='Administrativas';
+        end if;
+    end if;
+    
+     if (soc>ing and soc>adm) then
+      if(soc>adm) then
+        maxAr:='Sociales';
+      end if;
+      if(soc=ing) then
+        maxAr:='Ingenierías';
+      end if;
+      if(soc=adm) then
+        maxAr:='Administrativas';
+      end if;
+    else
+        if (adm > ing) then
+          minAr:='Ingeniería';
+        else
+          minAr:='Administración';
+        end if;
+    end if;
+end;
+
+--c)
+create or replace 
+procedure agregaOrganizacion(nomOrg char, nomCon char, monto number) is
+idc number; ido number; 
+begin
+ select idOrg into ido
+ from Organización
+ where NomOrg = nomOrg;
+ 
+ select idCon into idc
+ from Concurso
+ where NomCon = nomCon;
+ 
+ insert into Organizó values (ido, idc, monto);
+
+end;
+
+--prueba
+declare 
+NomOrg varchar(30); NomCon varchar(30); Monto integer;
+begin
+NomOrg:= 'ITAM';
+NomCon:= 'BANAMEX 18';
+Monto:= 1234;
+agregaOrganizacion(NomOrg,NomCon,Monto);
+end;
+
+--d)
+create or replace
+function participanDosAños(año1 integer, año2 integer) 
+return char is
+  cursor control is 
+    select nomorg
+    from organización org, organizó o, concurso c
+    where org.idorg=o.idorg and c.idcon=o.idcon
+      and año1=extract(year from fechaini);
+
+  cursor nombres is 
+    select nomorg
+    from organización org, organizó o, concurso c
+    where org.idorg=o.idorg and c.idcon=o.idcon
+      and año1=extract(year from fechaini)
+      and nomorg in (select nomorg
+        from organización org, organizó o, concurso c
+        where org.idorg=o.idorg and c.idcon=o.idcon
+          and año2=extract(year from fechaini));
+          
+cont integer; ind integer;
+begin
+cont := 0;
+  for var1 in control loop
+    cont:= cont + 1;
+  end loop;
+  for var2 in nombres loop
+    ind := ind + 1;
+  end loop;
+  
+  if ind = cont then
+    return 'Sí';
+  else 
+    return 'No';
+  end if;
+  
+end;
+
+--e)
+create or replace trigger ActClaveTesis
+after update on Tesis 
+for each row
+begin
+update Ganó g set g.idT =: new.idT
+ where g.idT =: old.idT;
+ dbms_output.put_line('se ha cambiado la clave de la tesis en Ganó');   
+
+update Estudió e set e.idT =: new.idT
+ where e.idT =: old.idT;
+ dbms_output.put_line('se ha cambiado la clave de la tesis en Estudió');  
+
+end;
+--f)
+create or replace
+trigger cambioClaveOrg
+before update on Organización
+for each row
+begin
+  update Escuela e set e.idorg = :new.idorg
+  where e.idorg=:old.idorg;
+  
+  update Organizó o set o.idorg = :new.idorg
+  where o.idorg=:old.idorg;
+  
+  update Empresa emp set emp.idorg = :new.idorg
+  where emp.idorg=:old.idorg;
+  
+  update Imparte i set i.idorg = :new.idorg
+  where i.idorg=:old.idorg;
+  
+  update Estudió est set est.idorg = :new.idorg
+  where est.idorg=:old.idorg;
+  
+end;
+--g)
+
+create or replace trigger muestraDattosOrg
+after insert on Organizó
+when 
+begin
+
+
+end;
+
+--g)
+ create or replace trigger insertaOrg
+ after insert on Organización
+ declare cursor cursor1 is
+  (select o.NomOrg, sum(monto) as suma from Organizó org, Organización o
+   where o.idorg = org.idOrg
+   group by o.NomOrg);
+   begin
+	open cursor1;
+	for var in cursor1 loop
+	dbms_output.put_line(var.NomOrg || ' ' || var.suma);
+	end loop;
+	close cursor1;
+	end;
+
+--h)
+create or replace
+procedure comparaMaterias(nom1 in char, nom2 in char, res out char) is
+cursor mats1 is
+  select nomMat from Alum a, Historial h, Mater m
+    where nomAl = nom1 and a.cu=h.cu and m.clavem=h.clavem;
+
+cursor mats2 is
+  select nomMat from Alum a, Historial h, Mater m
+    where nomAl = nom2
+      and a.cu=h.cu and m.clavem=h.clavem
+      and nomMat = all(select nomMat 
+        from Alum a, Historial h, Mater m where nomAl=nom1 and
+          a.cu=h.cu and m.clavem=h.clavem);
+
+begin
+  open mats1;
+  open mats2;
+  if mats1%notfound then
+    if mats2%notfound then
+      res:= '2';
+    else
+      res:='0';
+    end if;
+  else 
+    if mats2%notfound then
+      res := '0';
+    else
+      res := '1';
+    end if;
+  end if;
+
+
+end;

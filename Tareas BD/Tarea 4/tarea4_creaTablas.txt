@@ -1,0 +1,69 @@
+--Tarea 4 BD
+--Ulises Alejandre
+--Ricardo Carro
+
+--Creación de las tablas
+
+create table Expositor_T4(
+	idExp int primary key,
+	nomExp varchar(30),
+	fechaExp date);
+
+create table Articulo_T4(
+	idArt int primary key,
+	idAut int references Autor_T4,
+	nomArt varchar(30),
+	area varchar(30));
+
+create table Congreso_T4(
+	idCon int primary key,
+	idExp int references Expositor_T4,
+	nomCon varchar(30),
+	fechaIni date,
+	fechaFin date,
+	lugar varchar(30),
+	porRealizar char(1));
+
+create table Presentado_T4(
+	idArt int references Articulo_T4,
+	idCon int references Congreso_T4,
+	primary key(idArt,idCon));
+
+create table Organizacion_T4(
+	idOrg int primary key,
+	pais varchar(30));
+
+create table Empresa_T4(
+	idOrg int primary key references Organizacion_T4,
+	nomEmp varchar(30),
+	aportacion real);
+
+create table Institucion_T4(
+	idOrg int primary key references Organizacion_T4,
+	nomIns varchar(30),
+	domicilio varchar(30),
+	tipo varchar(30));
+
+create table Organiza_T4(
+	idOrg int references Organizacion_T4,
+	idCon int references Congreso_T4,
+	primary key(idCon,idOrg));
+
+create table Financiamiento_T4(
+	idFin int primary key,
+	idOrg int references Organizacion_T4
+	tipo varchar(30),
+	periodo char(4)); --se supone que dura un año natural (2018 1 Ene a 31 de Dic)
+
+create table Autor_T4(
+	idAut int primary key,
+	idOrg int references Institucion_T4,
+	nomAut int,
+	email varchar(30),
+	numArts int,
+	direccion varchar(30));
+
+create table Recibe_T4(
+	idAut int references Autor_T4,
+	idFin int references Financiamiento_T4,
+	primary key(idAut,idFin));

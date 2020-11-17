@@ -1,0 +1,139 @@
+--Tarea 3 BD
+
+--b)
+create or replace
+procedure MaxMinEgresados(minAr out char, maxAr out char) is
+  ing number; soc number; adm number;
+begin
+    ing:= cantEgresados('Ingeniería');
+    soc:= cantEgresados('Sociales');
+    adm:= cantEgresados('Administrativas');
+    
+    if (ing>=soc) then
+      if(ing > adm) then
+        maxAr:='Ingeniería';
+      end if;
+      if(adm=ing) then
+        maxAr:='Administrativas';
+      end if;
+    else
+        if (adm > soc) then
+          minAr:='Sociales';
+        else
+          minAr:='Administrativas';
+        end if;
+    end if;
+    
+     if (soc>ing and soc>adm) then
+      if(soc>adm) then
+        maxAr:='Sociales';
+      end if;
+      if(soc=ing) then
+        maxAr:='Ingenierías';
+      end if;
+      if(soc=adm) then
+        maxAr:='Administrativas';
+      end if;
+    else
+        if (adm > ing) then
+          minAr:='Ingeniería';
+        else
+          minAr:='Administración';
+        end if;
+    end if;
+end;
+
+--d)
+create or replace
+function participanDosAños(año1 integer, año2 integer) 
+return char is
+  cursor control is 
+    select nomorg
+    from organización org, organizó o, concurso c
+    where org.idorg=o.idorg and c.idcon=o.idcon
+      and año1=extract(year from fechaini);
+
+  cursor nombres is 
+    select nomorg
+    from organización org, organizó o, concurso c
+    where org.idorg=o.idorg and c.idcon=o.idcon
+      and año1=extract(year from fechaini)
+      and nomorg in (select nomorg
+        from organización org, organizó o, concurso c
+        where org.idorg=o.idorg and c.idcon=o.idcon
+          and año2=extract(year from fechaini));
+          
+cont integer; ind integer;
+begin
+cont := 0;
+  for var1 in control loop
+    cont:= cont + 1;
+  end loop;
+  for var2 in nombres loop
+    ind := ind + 1;
+  end loop;
+  
+  if ind = cont then
+    return 'Sí';
+  else 
+    return 'No';
+  end if;
+  
+end;
+
+--f)
+create or replace
+trigger cambioClaveOrg
+before update on Organización
+for each row
+begin
+  update Escuela e set e.idorg = :new.idorg
+  where e.idorg=:old.idorg;
+  
+  update Organizó o set o.idorg = :new.idorg
+  where o.idorg=:old.idorg;
+  
+  update Empresa emp set emp.idorg = :new.idorg
+  where emp.idorg=:old.idorg;
+  
+  update Imparte i set i.idorg = :new.idorg
+  where i.idorg=:old.idorg;
+  
+  update Estudió est set est.idorg = :new.idorg
+  where est.idorg=:old.idorg;
+  
+end;
+
+--h)
+create or replace
+procedure comparaMaterias(nom1 in char, nom2 in char, res out char) is
+-- creo que le falta algo a los cursores
+cursor mats1 is
+  select nomMat from Alum
+    where nomAl = nom1;
+
+cursor mats2 is
+  select nomMat from Alum
+    where nomAl = nom2
+      and nomMat = all(select nomMat 
+        from Alum where nomAl=nom1);
+
+begin
+  open mats1;
+  open mats2;
+  if mats1%notfound then
+    if mats2%notfound then
+      res:= '2';
+    else
+      res:='0'
+    end if;
+  else 
+    if mats2%notfound then
+      res := '0';
+    else
+      res := '1';
+    end if;
+  end if;
+
+
+end;

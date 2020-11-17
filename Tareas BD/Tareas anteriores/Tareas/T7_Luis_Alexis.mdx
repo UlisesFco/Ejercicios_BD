@@ -1,0 +1,73 @@
+--a. Muestra las ventas (montos y unidades) de los productos vendidos en México de la categoría "Fruit". 
+select {[Measures].[Store Sales],  [Measures].[Unit Sales]}on rows,
+{[Product].[Product Family]} on columns
+from [Food Mart]
+where [Product].[Family-Products].[Product Family].&[Food].&[Fruit]
+
+--b. Obtén por ciudad de los clientes las ventas (montos) de las tiendas de dicha ciudad
+select non empty([Customer].[City].children) on rows,
+non empty ([Measures].[Store Sales]) on columns
+from [Food Mart]
+
+--c. Escribe los costos de las ventas por categoría del producto y por país. Especifica la medida en el where. 
+select non empty[Product].[Product Category].children on rows,
+non empty[Customer].[Country].children on columns 
+from [Food Mart]
+where [Measures].[Store Cost]
+
+--d. Muestra los montos de las ventas de los clientes de Orizaba y Merida de la categoría de productos 'Beer and Wine'.
+select non empty [Measures].[Store Cost] on rows,
+non empty {[Customer].[City].&[Orizaba],[Customer].[City].&[Merida]} on columns
+from [Food Mart]
+where [Product].[Product Category].&[Beer and Wine]
+
+--e. Lista el costo de los productos, por nombre de la marca, de la categoría “Bread” para USA.
+-- Utiliza la función Descendants. 
+select [Measures].[Store Cost] on columns,
+descendants([Product].[Product Name],1) on rows
+from [Food Mart]
+where ([Product].[Dept-Products].[Product Department].&[Baked Goods].&[Bread],[Customer].[Country].&[USA])
+
+--f. Considerando a las categorías de los productos, muestra aquellas cuyos montos de ventas superaron los 
+--400 en la ciudad de Guadalajara.
+select {[Measures].[Unit Sales],[Measures].[Store Sales]} on columns,
+filter([Product].[Product Category].children,[Measures].[Store Sales]>=400) on rows
+from [Food Mart]
+where [Customer].[City].&[Guadalajara]
+
+--g. Considerando a las ciudades de los clientes, obtén aquellas cuyas unidades 
+--vendidas superaron las 300 en la subcategoría de productos Bagels
+
+select [Measures].[Unit Sales] on columns,
+non empty filter ([Customer].[City].children,[Measures].[Unit Sales]>=300) on rows
+from [Food Mart]
+where [Product].[Product Subcategory].&[Bagels]
+--Nota: no sale ninguna, el máximo es 182
+--with Member [Measures].x as MAX 
+--([Customer].[City].children,[Measures].[Unit Sales])
+--select [Measures].x on columns,
+--non empty filter([Customer].[City].children,[Measures].[Unit Sales]>300) on rows
+--from [Food Mart]
+--where [Product].[Product Subcategory].&[Bagels]
+
+--h. Lista los montos de ventas por país de las tiendas, ciudades de los clientes y distritos de las
+--tiendas. Deben verse los elementos de cada uno de estos niveles. 
+select [Measures].[Store Sales] on columns,
+non empty([Store].[Sales Country].children,[Customer].[City].children,[Store].[Sales District].children) on rows
+from [Food Mart]
+
+
+--i.Escribe las unidades vendidas en el tercer trimestre ****(--de que año?, de los dos?--)**** 
+--por departamento de los productos,
+--estados de los clientes y subcategorías de los productos. Deben verse los elementos de cada
+--uno de estos niveles. 
+
+select non empty ([Product].[Product Department].children,[Product].[Product Subcategory].children,
+[Customer].[Sales State Province].children) on columns,
+non empty [Measures].[Unit Sales] on rows
+from [Food Mart]
+where {[Time By Day].[Quarter].&[Q4]}
+
+--j. Muestra los costos de los productos por región de las tiendas y categorías de los mismos,
+--tanto en el primero como en el segundo trimestres. Deben verse los elementos de cada uno
+--de estos niveles. select {[Time By Day].[Quarter].&[Q3],[Time By Day].[Quarter].&[Q4]} on columns,non empty ([Store].[Sales Region].children,[Product].[Product Category].children) on rowsfrom [Food Mart]where [Measures].[Store Cost]

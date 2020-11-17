@@ -1,0 +1,75 @@
+Examen ejercicio 3.
+
+--inciso a) (0.7 puntos)
+select nomP, Estado, Ciudad
+from país p, CdEdo c, sitio s 
+where p.IdP =  c.IdP and c.IdCE = s.IdCE and 
+	c.IdCE not in (select IdCE from Hotel);
+
+
+--inciso b) (0.7 puntos)
+select NomPaq, p.Tipo 
+from Paquete p, Visita v, Sitio s 
+where s.tipo = 'Castillo' and p.IdPaq = v.IdPaq and v.IdS = s.IdS and 
+	p.IdPaq in 
+	(select IdPaq from Contiene c, Extra e 
+	where Tipo = 'Espectáculo musical' and c.IdEx = e.IdEx);
+
+
+--inciso c) (0.8 puntos)
+select NomPaq, sum(e.Costo) 
+from Paquete p, Fechas f, Contiene c, Extra e 
+where FechaIni between date'2018-11-01' and date'2018-11-30' and
+	p.idPaq = f.IdPaq and p.IdPaq = c.IdPaq and c.IdEx = e.IdEx
+group by NomPaq
+having sum(e.costo)< 20000
+
+
+--inciso d) (0.8 puntos)
+select Ciudad, NomH, count(*)
+from CdEdo c, Hotel h, Incluye i
+where c.IdCE = h.IdCE and h.IdH = i.IdH
+group by Ciudad, NomH
+having count(*)>= all 
+	(select count(*) from Incluye
+	group by IdH);
+
+
+--inciso e) (0.8 puntos)
+
+create or replace trigger borraExtra  
+before delete on Extra
+for each row
+declare numPaq int;
+begin
+select count(*) into numPaq 
+	from Contiene c
+	where :old.IdEx = c.IdEx;
+dbms_output.put_line( 'Aparecía en : ' || numPaq ||  ' paquetes '  );
+delete from Contiene where IdEx = :old.IdEx;
+end;   
+
+
+--inciso f) (2.7 puntos)
+create or replace procedure ActualizaExtra () is
+cursor TuplasExtra is 		--Para recorrer la tabla de AcExtras.
+	select IdEx, Porc, Baja 			--0.4
+	from ActExtras;	
+idTemp int;
+begin
+  for tupla in TuplasExtra loop				--0.3
+    select IdEx into idTemp 				--0.3
+	from Extra where IdEx = tupla.IdEx;
+    if (idTemp is not null) then			--0.3
+	if (tupla.Baja) then				--0.3
+	  delete from Extra where IdEx = idTemp;	--0.3
+	else 
+	  update Extra set Costo = Costo * (1+tupla.Porc)  --0.5
+		where IdEx = idTemp;
+	end if;
+    else 						-- 0.3
+	dbms_output.put_line ('Error: ' || idTemp || ' no es extra');
+    end if
+  end loop;
+end;
+

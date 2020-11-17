@@ -1,0 +1,28 @@
+-- Tarea 7 consultas pares
+
+--b)
+select { Measures.[Store Sales]} on columns,
+non empty [Customer].City.members on rows
+from [Food Mart]
+
+--d)
+select Measures.[Store Sales] on columns,
+{(city.Orizaba), (city.Merida)} on rows
+from [Food Mart]
+where [Product].[Beer and Wine]
+
+--f)
+select Measures.[Store Sales] on columns,
+filter(Product.[Product Category].members, [Store Sales]>400) on rows
+from [Food Mart]
+where City.Guadalajara
+
+--h)
+select non empty ([Store].[Sales Country].members, [Customer].[City].members, Store.[Sales District].members ) on columns,
+non empty {[Store Sales]} on rows
+from [Food Mart]
+
+--j)
+select  ([Store].[Sales Region].members, [Product].[Product Category].members) on columns,
+{[Time by day].[Quarter].[Q1],[Time by day].[Quarter].[Q2]} on rows
+from [Food Mart]

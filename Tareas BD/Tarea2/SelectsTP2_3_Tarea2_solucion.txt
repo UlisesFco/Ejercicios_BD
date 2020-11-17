@@ -1,0 +1,215 @@
+-- Respuestas trabajo práctico 2.3
+
+-- a)
+	select 	NomA, NomCar, NomOrg, NomT
+	from 	Autor a, Estudió e, Carrera c, Tesis t, 
+		Organización org
+	where 	a.IdA=e.IdA and e.IdCar=c.IdCar
+		and e.IdT=t.IdT and e.IdOrg=org.IdOrg;
+
+
+-- b)
+ 	select	NomCon, extract(year from FechaIni) Año, NomOrg, Monto
+ 	from 	Concurso c, Organizó o, Organización org
+ 	where 	c.IdCon=o.IdCon and o.IdOrg=org.IdOrg and
+		org.Tipo='emp'
+ 	order by Año;
+	
+
+-- c)
+	select 	NomOrg, NomCar
+	from 	Organización org, Imparte i, Carrera c
+	where 	org.IdOrg=i.IdOrg and c.IdCar=i.IdCar
+		and i.IdOrg not in
+        	(select IdOrg from Carrera c, Imparte i 
+	 	 where Área like 'Ing%' and c.IdCar=i.IdCar);
+
+
+-- d)
+	select 	NomA, NomCar, Lugar
+	from 	Carrera cr, Estudió e, Autor a, Ganó g
+	where 	Área='Ingeniería' and g.Lugar=1 and
+		cr.IdCar=e.IdCar and e.IdA=a.IdA and e.IdT=g.IdT
+	order by NomCar desc;
+
+
+-- e)
+	select 	NomOrg, NomCon
+	from 	Concurso c, Organizó o, Organización org
+	where 	c.IdCon=o.IdCon and o.IdOrg=org.IdOrg
+		and org.IdOrg in
+        	(select IdOrg
+	         from Concurso c, Organizó o
+        	 where NomCon like 'AMIME%' and c.IdCon=o.IdCon)
+		and org.IdOrg in
+        	(select IdOrg
+        	 from Concurso c, Organizó o
+        	 where NomCon like 'IMEF%' and c.IdCon=o.IdCon);
+
+	
+-- f)
+	select	NomT, NomCon
+	from 	Tesis t, Ganó g, Concurso c
+	where  	t.IdT in 
+			(select IdT from Ganó g, Concurso c
+			where g.IdCon=c.IdCon and NomCon like 'ANIEI%')
+		  and t.IdT in
+			(select IdT from Ganó g, Concurso c
+			where g.IdCon=c.IdCon and NomCon like 'AMIME%')
+		and t.IdT=g.IdT and g.IdCon=c.IdCon;
+
+
+-- g)
+	select	NomOrg
+	from	Organización org
+	where 	IdOrg not in
+			(select IdOrg
+			from Estudió e, Ganó g
+			where e.IdT=g.IdT and Lugar=1)
+		and org.Tipo='esc';
+
+
+-- h) 
+-- Solución 1 (en ambas soluciones se supone que cualquier concurso inicia y termina
+--	durante el mismo año):
+	select 	NomOrg, NomCon
+	from 	Organización org, Organizó o, Concurso c
+	where 	org.IdOrg=o.IdOrg and c.IdCon=o.IdCon
+		and org.IdOrg in		-- Sólo empresas,
+			(select IdOrg from Empresa)
+		and org.IdOrg not in		-- que no organizaron Concursos
+        	 	(select IdOrg		-- los dos años pasados.
+        		 from Concurso c, Organizó o
+        		 where FechaIni>=date'2016-01-01' and FechaFin<=date'2017-12-31'
+				and c.IdCon=o.IdCon);
+
+-- Solución 2:
+	select 	NomOrg, NomCon
+	from 	Organización org, Organizó o, Concurso c
+	where 	org.IdOrg=o.IdOrg and c.IdCon=o.IdCon
+		and org.IdOrg in		-- Sólo empresas,
+			(select IdOrg from Empresa)
+		and org.IdOrg not in		-- que no organizaron Concursos
+        	 	(select IdOrg		-- los dos años pasados.
+        		 from Concurso c, Organizó o
+        		 where extract(year from FechaIni)
+				between extract(year from sysdate)-2
+				and extract(year from sysdate)-1
+				and c.IdCon=o.IdCon);
+
+
+-- i)
+	select 	NomCon
+	from 	Organización org, Organizó o, Concurso c
+	where 	NomOrg in ('BANAMEX', 'BANXICO') 
+		and org.IdOrg=o.IdOrg and o.IdCon=c.IdCon
+    	    union
+	select 	NomCon
+	from 	Carrera car, Estudió e, Ganó g, Concurso c
+	where 	Área='Sociales' and car.IdCar=e.IdCar
+		and e.IdT=g.IdT and g.IdCon=c.IdCon;
+
+
+-- j)
+	select 	NomCon, extract(year from FechaIni) Año
+	from 	Concurso
+	where 	extract(year from FechaIni)= extract(year from sysdate)
+	   union
+	select 	NomCon, extract(year from FechaIni) Año
+	from 	Organización org, Estudió e, Ganó g, Concurso c
+	where 	org.NomOrg='ITAM' and org.IdOrg=e.IdOrg and e.IdT=g.IdT 
+		and g.IdCon=c.IdCon;
+
+
+-- k)
+	select 	NomOrg, NomCar, count(*) "Cantidad Egresados"
+	from 	Carrera cr, Estudió e, Organización org
+	where 	cr.IdCar=e.IdCar and e.IdOrg=org.IdOrg
+	group by NomOrg, NomCar
+	order by NomOrg, NomCar;
+
+
+-- l)
+	select 	NomT, NomA, NomCar
+	from 	Tesis t, Estudió e, Autor a, Carrera c
+	where 	t.IdT=e.IdT and e.IdA=a.IdA and e.IdCar=c.IdCar
+		and t.IdT in
+        	(select IdT from Estudió
+        	 group by IdT
+        	 having count(*)>1)
+		and t.IdT in
+        	(select IdT from Ganó
+        	 group by IdT
+        	 having count(*)>1);
+
+
+-- m)
+	select 	NomOrg, count(*) "Cantidad Concursos"
+	from 	Organización org, Organizó o, Concurso c
+	where 	extract(year from FechaIni)= extract(year from sysdate)-1
+		and c.IdCon=o.IdCon and o.IdOrg=org.IdOrg
+		and org.Tipo='emp'
+	group by NomOrg
+	having count(*)>=2;
+
+
+-- n)
+	select 	NomOrg, count(*) "Cantidad Carreras"
+	from 	Organización org, Imparte i
+	where 	org.IdOrg=i.IdOrg and
+		i.IdOrg not in
+		(select IdOrg from Imparte
+		group by IdOrg
+		having count(*) >= all
+				(select count(*) from Imparte
+				group by IdOrg)
+	 		or count(*) <= all
+				(select count(*) from Imparte
+				group by IdOrg))
+	group by NomOrg;
+
+
+-- o) 
+-- Solución 1 (estándar en SQL):
+
+	select 	NomOrg, count(*) "Total Egresados"
+	from 	Organización org, Estudió e
+	where 	org.IdOrg=e.IdOrg
+	group by NomOrg
+	having 	count(*) >= all
+		(select count(*) from Estudió
+		 group by IdOrg);
+
+
+-- Solución 2 (válida en Sybase y en SQL Server, pero no en Oracle):
+
+	select 	NomOrg, count(*) "Total Egresados"
+	from 	Organización org, Estudió e
+	where 	org.IdOrg=e.IdOrg
+	group by NomOrg
+	having 	max(count(*))=count(*);
+
+
+-- p) Consulta de división.
+-- Solución 1:
+	select 	NomOrg, count(*) "Cantidad de Concursos"
+	from 	Concurso c, Organizó o, Organización org
+	where 	c.IdCon=o.IdCon and o.IdOrg=org.IdOrg
+	group by NomOrg
+	having 	count(*) in
+       		(select count(*) from Concurso);
+
+
+-- Solución 2 (aquí no se puede obtener la cuenta directamente):
+
+	select	NomOrg
+	from	Organización org
+	where	not exists
+		(select * from Concurso c
+		 where not exists
+			(select * from Organizó o
+			 where  org.IdOrg=o.IdOrg 
+				and o.IdCon=c.IdCon));
+
+
+

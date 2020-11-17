@@ -1,0 +1,53 @@
+create table TP4_Universidad(
+idUni int primary key,
+Nombre varChar(30),
+Siglas varchar(10))
+
+
+create table  TP4_Carrera (
+idCarrera int primary key,
+Nombre varchar(30),
+Area varchar(3) check (Area in('Ing', 'Egn', 'Adm', 'Mat'))
+)
+
+create table TP4_Servicios(
+idServicios int primary key,
+nombre varchar(30))
+
+create table TP4_Campus(
+idCampus int primary key,
+Nombre Varchar(30),
+Domicilio varchar(30),
+telefeno varchar(30),
+ciudad varchar(30),
+Estado varChar(30),
+idUni int references TP4_Universidad,
+totalProfs int)
+
+create table TP4_Imparte(
+idUni int references TP4_Universidad null,
+idCarrera int references TP4_Carrera null,
+idCampus int references TP4_Campus null,
+duracion int,
+credTot int,
+primary key (idUni,idCarrera,idCampus));
+
+create table TP4_Ofrece(
+idServicios int references TP4_Servicios,
+idCampus int references TP4_Campus,
+costoExtra char(2) check (costoExtra in('Si','No')),
+enCampus char(2) check (enCampus in('Si','No')),
+primary key (idServicios,idCampus));
+
+create table TP4_Departamento(
+idDep int primary key,
+Nombre varchar(30),
+idCampus int references TP4_Campus
+)
+
+create table TP4_Profesor(
+idProf int primary key,
+Nombre varchar(30),
+idDep int references TP4_Departamento,
+Escolaridad varchar(2) check (Escolaridad in('LC','MI','DR'))
+)

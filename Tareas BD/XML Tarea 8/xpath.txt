@@ -1,0 +1,74 @@
+--TP6 XML
+====================================================
+		1 - Xpath
+====================================================
+--a)
+select Doc.query('//employee/fname')
+from Company;
+
+--b)
+select Doc.query('//department/dname')
+from Company;
+
+--c)
+select Doc.query('companyDB//department[locations/location="Houston"]/dname')
+from Company
+
+--d)
+select Doc.query('companyDB//project[plocation="Stafford"]/pname')
+from Company
+
+--e)
+select Doc.query('companyDB//employee[salary<30000]/fname')
+from Company;
+
+--f)
+select Doc.query('companyDB//project[plocation>="N"]/pname')
+from Company;
+
+--g)
+select Doc.query('companyDB//department[@dno=5]/projectsControlled[@pnos]')
+from Company;
+
+--h)
+select Doc.query('companyDB//employee[@worksFor=7]/fname')
+from Company;
+
+--i)
+select Doc.query('companyDB//employee[not (dependents)]/fname')
+from Company;
+
+--j)
+select Doc.query('companyDB//department[locations/location="Bellaire"
+or contains(manager/startDate,"1999")]/dname')
+from Company;
+
+--k)
+select Doc.query('companyDB//employee[@worksFor=6 or salary>90000]/fname')
+from Company;
+
+--l)
+select Doc.query('companyDB//employee[@worksFor=7]
+//dependent[relationship="Spouse"]/dependentName')
+from Company;
+
+--m)
+select Doc.query('companyDB//department[dname>="R"]//location[.>="P"]')
+from Company;
+
+--n)
+select Doc.query('companyDB//locations[location>="S"]/../dname')
+from Company;
+
+--o)
+select Doc.query('companyDB//workers/worker[.>40]/../../pname')
+from Company;
+select Doc.query('companyDB//workers[worker>40]/../pname')
+from Company;
+select Doc.query('companyDB//workers/worker[.>40]/../../*')	--Muestra un uso de *.
+from Company;
+
+==================================================== 
+		1 - XQuery
+====================================================
+

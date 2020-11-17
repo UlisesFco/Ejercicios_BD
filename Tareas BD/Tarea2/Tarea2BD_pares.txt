@@ -1,0 +1,94 @@
+
+--b)
+select NomCon, FechaFin, NomOrg, monto
+from Concurso c, organizó o, organización org
+where c.idCon = o.idCon and o.idOrg = org.idOrg
+order by FechaFin ASC
+
+--d)
+select  distinct(NomA), NomCar
+from Autor a, Estudió e, Carrera c, Tesis T, Ganó g
+where a.idA = e.idA and e.idCar = c.idCar and c.Área = 'Ingeniería' and 
+e.idT = g.idT and g.Lugar = 1
+order by NomCar DESC
+
+
+-- f)
+select t.idT, NomT, NomCon
+from Tesis t, Ganó g, Concurso c
+where t.idT = g.idT and g.idCon = c.idCon
+and NomCon like 'ANIEI%'
+and t.idT in 
+(select t.idT from Tesis t, Ganó g, Concurso c 
+where t.idT = g.idT and g.idCon = c.idCon
+and NomCon like 'AMIME%')
+and g.idCon in
+(select g.idCon from Ganó g, Concurso c
+where g.idCon = c.idCon);
+
+
+--h)
+select Nomorg, NomCon
+from Organización org, Organizó o, Concurso c
+where Tipo = 'emp' and c.idCon = o.idCon and o.idOrg not in
+(select idOrg 
+from Concurso c, Organizó o
+where (extract(year from FechaIni) = extract(year from sysdate)-1) and 
+c.idCon = o.idCon)
+and org.idOrg not in
+(select idOrg 
+from Concurso c, Organizó o
+where (extract(year from FechaIni) = extract(year from sysdate)-2) and 
+c.idCon = o.idCon)
+
+--j)
+
+select NomCon,FechaIni
+from Concurso con
+where extract(year from FechaIni) = extract(year from sysdate) or NomCon in
+(select NomCon
+from Concurso con, Ganó g, Estudió e, Organización org
+where con.idcon =g.idcon and g.idt=e.idt and e.idorg=org.idorg and NomOrg ='ITAM');
+
+--l)
+select NomCar, NomA, NomT
+from Tesis t, Estudió e, Autor a, Carrera c
+where t.idt=e.idt and e.ida = a.ida and e.idcar = c.idcar and Nomt in
+(select NomT
+from Tesis t, Estudió e, Autor a
+where t.idt= e.idt and e.ida=a.ida
+group by Nomt
+having count(*)>=2
+intersect
+select NomT
+from Tesis t, Ganó g, Concurso con
+where t.idt=g.idt and g.idcon=con.idcon
+group by nomt
+having count(*)>=2);
+
+
+--n)
+select NomOrg
+from Organización org, Imparte i, Carrera c
+where  org.idorg=i.idorg and i.idcar=c.idcar and org.tipo = 'esc'
+having count(*) <= all -- esto es para el maximo de materias
+(select count(*)
+from Organización org, Imparte i, Carrera c
+where org.idorg=i.idorg and i.idcar=c.idcar)
+and count(*) >= all --esto es para el minimo de materias
+(select count(*)
+from Organización org, Imparte i, Carrera c
+where org.idorg=i.idorg and i.idcar=c.idcar)
+group by NomOrg ;
+
+
+--p) no estoy muy seguro
+select NomOrg
+from Organización org, Organizó o, Concurso con
+where org.idOrg=o.idOrg and o.idCon=con.idCon 
+having count(*) >= all
+(select count(*)
+from Concurso)
+group by NomOrg
+
+

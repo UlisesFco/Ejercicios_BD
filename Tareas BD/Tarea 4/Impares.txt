@@ -1,0 +1,37 @@
+-- Tarea 4 Bases de datos
+--Ricardo Carro
+--Ulises Alejandre
+
+
+--a)
+select distinct numarts, I4.nomins 
+from Autor_T4 A4, Institucion_T4 I4
+where A4.idOrg = I4.idOrg;
+
+--c)
+select A4.nomAut,  count(Prest4.idArt) "Cantidad de articulos en mas congresos"
+from Autor_T4 A4, Articulo_T4 Art4, Presentado_T4 Prest4, Congreso_T4 Con4
+where A4.idAut = Art4.idAut and Art4.idArt = Prest4.idArt and Prest4.idCon = Con4.idCon;
+group by nomAut
+having count (Prest4.idArt) >= (select idArt count(*) from Presentado_T4 P4, Congreso_T4 C4 where C4.idCon = P4.idCon);  
+
+--e)
+create or replace function CantCongresos(nombre char) return integer is
+ cantCongresos integer;
+ begin
+ select count(*) into cantCongresos
+ from Organizacion_T4 OT4, Organiza_T4 O4, Congreso_T4 ConT4
+ where OT4.idOrg = O4.idOrg and O4.idCon = ConT4.idCon; 
+ return cantCongresos;
+ end;
+
+--g)
+create or replace trigger actNumArt
+after insert on Presentado_T4 
+for each row
+begin
+
+ update Autor_T4 A4 set A4.numArts = :old.NumArts + 1
+  where A4.idAut = Articulo_T4.idAut and Articulo_T4.idArt = Presentado_T4.idArt
+ 
+end;
